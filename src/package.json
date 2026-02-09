@@ -77,7 +77,8 @@
   "overrides": {
     "readdirp": "^3.6.0",
     "braces": "^3.0.3",
-    "micromatch": "^4.0.8"
+    "micromatch": "^4.0.8",
+    "elliptic": "^6.6.1"
   },
   "standard": {
     "env": {
