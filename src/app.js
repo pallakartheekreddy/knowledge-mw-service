@@ -151,6 +151,7 @@ app.use(function (req, res, next) {
   } else if (allowedOrigins.length === 0) {
     res.setHeader('Access-Control-Allow-Origin', '*')
   }
+  res.setHeader('Vary', 'Origin')
   res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,PATCH,DELETE,OPTIONS')
   res.header('Access-Control-Allow-Headers', '*')
 
