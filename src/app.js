@@ -1,4 +1,5 @@
 var express = require('express')
+var helmet = require('helmet')
 var bodyParser = require('body-parser')
 var methodOverride = require('method-override')
 var http = require('http')
@@ -108,26 +109,16 @@ logger.debug({
   env: {
     port,
     defaultChannel,
-    telemetryBaseUrl,
-    globalEkstepProxyBaseUrl,
-    contentRepoBaseUrl,
-    learnerServiceLocalBaseUrl,
-    searchServiceBaseUrl,
-    dialRepoBaseUrl,
-    pluginRepoBaseUrl,
-    dataServiceBaseUrl,
-    languageServiceBaseUrl,
     logLevel,
     logFilePath,
     producerId,
-    sunbirdPortalBaseUrl,
     lockExpiryTime,
     isHealthCheckEnabled,
-    contentServiceLocalBaseUrl,
     dialCodeImageTempFolder: process.env.dial_code_image_temp_folder
   }
 })
 var app = express()
+app.use(helmet())
 const isEkStepProxyRequest = function (req) {
   let url = req.url
   const uploadAPI = configUtil.getConfig('UPLOAD_CONTENT_URI')
@@ -153,7 +144,14 @@ app.use(methodOverride())
 
 // Cache-Control, X-Requested-With these two headers required for upload file through fine-upload library
 app.use(function (req, res, next) {
-  res.header('Access-Control-Allow-Origin', '*')
+  var allowedOrigins = process.env.sunbird_allowed_origins ? process.env.sunbird_allowed_origins.split(',') : []
+  var origin = req.headers.origin
+  if (allowedOrigins.indexOf(origin) > -1) {
+    res.setHeader('Access-Control-Allow-Origin', origin)
+  } else if (allowedOrigins.length === 0) {
+    res.setHeader('Access-Control-Allow-Origin', '*')
+  }
+  res.setHeader('Vary', 'Origin')
   res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,PATCH,DELETE,OPTIONS')
   res.header('Access-Control-Allow-Headers', '*')
 
