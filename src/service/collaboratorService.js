@@ -174,6 +174,37 @@ function updateCollaborators (req, response) {
  * @param {array} newCollaboratorsArray
  */
 function compareCollaborators (req, contentInfo, oldCollaboratorsArray, newCollaboratorsArray) {
+  var MAX_COLLABORATORS = 1000
+
+  if (!Array.isArray(oldCollaboratorsArray) || !Array.isArray(newCollaboratorsArray)) {
+    logger.error({
+      msg: 'Invalid collaborators data type while comparing collaborators',
+      err: {
+        oldType: typeof oldCollaboratorsArray,
+        newType: typeof newCollaboratorsArray
+      },
+      additionalInfo: {
+        contentId: contentInfo && contentInfo.identifier
+      }
+    }, req)
+    return
+  }
+
+  if (oldCollaboratorsArray.length > MAX_COLLABORATORS || newCollaboratorsArray.length > MAX_COLLABORATORS) {
+    logger.error({
+      msg: 'Collaborators list too large while comparing collaborators',
+      err: {
+        maxAllowed: MAX_COLLABORATORS,
+        oldLength: oldCollaboratorsArray.length,
+        newLength: newCollaboratorsArray.length
+      },
+      additionalInfo: {
+        contentId: contentInfo && contentInfo.identifier
+      }
+    }, req)
+    return
+  }
+
   var addedCollaborators = lodash.difference(newCollaboratorsArray, oldCollaboratorsArray)
   var removedCollaborators = lodash.difference(oldCollaboratorsArray, newCollaboratorsArray)
   notifyCollaborators(req, contentInfo, addedCollaborators, 'addCollaborators')
