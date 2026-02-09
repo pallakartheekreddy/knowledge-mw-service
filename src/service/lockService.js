@@ -9,7 +9,7 @@ var path = require('path')
 var respUtil = require('response_util')
 var logger = require('sb_logger_util_v2')
 var configUtil = require('sb-config-util')
-var request = require('request')
+var axios = require('axios')
 
 var messageUtils = require('./messageUtil')
 var utilsService = require('../service/utilsService')
@@ -780,19 +780,21 @@ function checkResourceTypeValidation(req, CBW) {
         url: configUtil.getConfig('CONTENT_SERVICE_LOCAL_BASE_URL') + '/v1/content/getContentLockValidation',
         headers: req.headers,
         method: 'POST',
-        body: req.body,
-        json: true
+        data: req.body
       }
-      request(httpOptions, function (err, httpResponse, body) {
-        if (err) {
+      axios(httpOptions)
+        .then(function (response) {
+          var body = response.data
+          if (lodash.get(body, 'result.message')) {
+            CBW(body.result.validation, body.result)
+          } else {
+            CBW(false, body)
+          }
+        })
+        .catch(function (err) {
           logger.error({ msg: 'error in lock service in checkResourceTypeValidation', additionalInfo: { httpOpt: lodash.omit(httpOptions, 'headers') }, err })
           CBW(false, err)
-        } else if (lodash.get(body, 'result.message')) {
-          CBW(body.result.validation, body.result)
-        } else {
-          CBW(false, body)
-        }
-      })
+        })
       break
     default:
       CBW(false, 'Resource type is not valid')
